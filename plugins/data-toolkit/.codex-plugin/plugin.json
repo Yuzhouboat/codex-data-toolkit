@@ -12,12 +12,12 @@
   "interface": {
     "displayName": "Data Toolkit",
     "shortDescription": "MySQL, AWS, Redshift, and GitHub tools",
-    "longDescription": "Use your own service credentials to inspect databases, work with AWS and Redshift, and access GitHub. Includes guided setup and read-only connection checks. MLflow tracing is an optional user-configured CLI integration.",
+    "longDescription": "Use your own service credentials to inspect databases, work with AWS and Redshift, and access GitHub. Includes guided setup and read-only connection checks.",
     "developerName": "Yuzhouboat",
     "category": "Developer Tools",
     "defaultPrompt": [
       "Help me set up Data Toolkit.",
-      "Check my MySQL, AWS, Redshift, GitHub, and optional MLflow connections."
+      "Check my MySQL, AWS, Redshift, and GitHub connections."
     ]
   }
 }

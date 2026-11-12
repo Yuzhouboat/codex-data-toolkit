@@ -55,4 +55,4 @@ plugin cache, since a refresh replaces it.
 
 Ask: "Use check-connectors to check my Data Toolkit connections."
 Configuration and executable presence do not establish remote access. AWS identity does
-not establish Redshift SQL access, and an MLflow experiment read does not prove tracing.
+not establish Redshift SQL access.

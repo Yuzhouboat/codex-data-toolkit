@@ -10,8 +10,8 @@ not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
 
-Use a Codex client with plugin marketplace support. Once you have access to this
-repository, register the marketplace:
+Use a Codex client with plugin marketplace support. Register this public GitHub
+repository as a custom marketplace:
 
 ```bash
 codex plugin marketplace add Yuzhouboat/codex-data-toolkit
@@ -19,7 +19,10 @@ codex plugin marketplace add Yuzhouboat/codex-data-toolkit
 
 Open the Plugins Directory in the desktop client, choose **Yuzhou Data Toolkit**,
 and install **Data Toolkit**. Restart or start a new session after installation.
-Private repositories require Git access using your usual authenticated setup.
+Share this repository link with other users:
+[Yuzhouboat/codex-data-toolkit](https://github.com/Yuzhouboat/codex-data-toolkit).
+Users must add this custom marketplace before browsing its plugins; the plugin
+is not listed in OpenAI's public Plugins Directory.
 
 On CLI versions exposing `codex plugin add`, you can also install with:
 
@@ -80,16 +83,6 @@ Then ask for the work you need, for example:
 
 The available tools and permissions determine which requests can run.
 
-## Optional MLflow tracing
-
-Tracing is **off by default**. No hook is installed and no destination is selected.
-For Codex CLI, ask setup-data-toolkit to configure tracing using your chosen
-tracking URI and experiment. The
-[tracing reference](plugins/data-toolkit/skills/setup-data-toolkit/references/mlflow.md)
-explains the separate notify setup, compatibility check, and removal procedure.
-Completed CLI turns may upload conversation content after that setup. Removing
-the plugin does not remove a separately configured notify handler.
-
 ## Update or remove
 
 Refresh this marketplace, then update the installed plugin using the client:
@@ -106,7 +99,7 @@ codex plugin marketplace remove yuzhou-data-toolkit
 ```
 
 Check `codex plugin remove --help` for your installed client's selector format.
-Uninstalling does not revoke service credentials or remove optional tracing.
+Uninstalling does not revoke service credentials.
 
 ## Develop and package
 

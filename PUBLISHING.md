@@ -5,11 +5,13 @@ The ZIP is an authoring artifact, not an approved public-directory release.
 
 ## GitHub marketplace
 
-Users with repository access can add `Yuzhouboat/codex-data-toolkit`, then install
-data-toolkit from yuzhou-data-toolkit. To enable access for everyone, the owner
-can make the repository public after reviewing the package and choosing a license.
-No license is asserted by this initial private package; confirm licensing before
-public distribution, including the source repository's copied workflow.
+The public GitHub repository is the distribution source. Users add
+`Yuzhouboat/codex-data-toolkit` as a custom marketplace, then install data-toolkit
+from yuzhou-data-toolkit. This does not list the plugin in OpenAI's public Plugins
+Directory. Share https://github.com/Yuzhouboat/codex-data-toolkit with users.
+No license is asserted by this package; public visibility alone does not grant an
+open-source license. Confirm licensing for reuse, including the source repository's
+copied workflow.
 
 For each release, change the version in `plugins/data-toolkit/.codex-plugin/plugin.json`,
 run validation/tests, build the ZIP, and smoke-test a fresh install. Commit and tag
@@ -35,8 +37,7 @@ evaluation of the portal's supported authentication methods. The bundled GitHub
 PAT connection is not a ready-to-submit OAuth integration.
 
 This package ships no lifecycle hooks or registered app references. Hooks are not
-currently accepted in public-directory ZIPs. Optional CLI tracing remains a separate
-user configuration and is not enabled by installation.
+currently accepted in public-directory ZIPs.
 
 Before submitting, complete developer identity verification, licensing, public
 listing assets and publisher URLs, privacy/terms documentation, a clean installation
@@ -46,8 +47,8 @@ Do not mark unexecuted examples as passed or include reviewer secrets in the ZIP
 
 Recommended live test cases: MySQL SELECT 1 and schema discovery, AWS caller identity,
 bounded Redshift workgroup listing, authenticated GitHub read, and missing-credential
-handling. Also test that checks stay read-only, avoid disclosing credentials, and
-leave optional tracing disabled. Verify permissions separately for each service.
+handling. Also test that checks stay read-only and avoid disclosing credentials.
+Verify permissions separately for each service.
 
 After review approval, publishing is a separate action in the submission portal.
 Marketplace installation alone does not create a public-directory listing.

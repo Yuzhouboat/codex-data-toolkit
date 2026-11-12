@@ -17,7 +17,6 @@ PACKAGE_FILES = (
     "skills/check-connectors/SKILL.md",
     "skills/setup-data-toolkit/SKILL.md",
     "skills/setup-data-toolkit/references/setup.md",
-    "skills/setup-data-toolkit/references/mlflow.md",
 )
 
 

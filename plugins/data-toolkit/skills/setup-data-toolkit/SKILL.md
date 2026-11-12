@@ -1,6 +1,6 @@
 ---
 name: setup-data-toolkit
-description: Set up Data Toolkit credentials and runtimes, select its MySQL, AWS/Redshift, or GitHub integrations, or explicitly configure optional MLflow conversation tracing.
+description: Set up Data Toolkit credentials and runtimes, select its MySQL, AWS/Redshift, or GitHub integrations.
 ---
 
 Configure the services the user intends to use. Installation makes connector definitions
@@ -19,11 +19,6 @@ change is authorized, make the smallest edit and validate the resulting TOML or 
 
 Explain that the bundled AWS proxy targets us-east-1. AWS_REGION alone does not change
 that endpoint. Use the setup reference when a different endpoint is requested.
-
-For an explicit tracing request, read [references/mlflow.md](references/mlflow.md).
-Establish the user's tracking destination and experiment before enabling uploads, and
-explain that completed CLI turns can upload conversation data. Installing this plugin
-does not authorize enabling tracing or choosing a destination for the user.
 
 Finish by listing configured services, missing prerequisites, and any restart or project
 trust step. When asked to verify connections, use the packaged check-connectors workflow
