@@ -12,6 +12,7 @@ PLUGIN = ROOT / "plugins/data-toolkit"
 PACKAGE_FILES = (
     ".codex-plugin/plugin.json",
     ".mcp.json",
+    "assets/icon.svg",
     "scripts/launch_mysql.py",
     "scripts/check_prerequisites.py",
     "skills/check-connectors/SKILL.md",
@@ -42,6 +43,15 @@ def validate(plugin=PLUGIN, catalog_path=None):
         raise ValueError("Component paths must reference the packaged skills and MCP config")
     if "hooks" in manifest or "apps" in manifest:
         raise ValueError("This distribution must not include hooks or registered app references")
+    presentation = manifest["interface"]
+    references = {key: presentation[key] for key in ("logo", "logoDark", "composerIcon", "composerIconDark")}
+    references["onboardingSkill"] = manifest["extensions"]["com.openai"]["onboardingSkill"]
+    for name, reference in references.items():
+        target = (plugin / reference).resolve()
+        if not reference.startswith("./") or not target.is_relative_to(plugin.resolve()):
+            raise ValueError(f"Invalid presentation reference: {name}")
+        if target.relative_to(plugin.resolve()).as_posix() not in PACKAGE_FILES or not target.is_file():
+            raise ValueError(f"Unpackaged presentation reference: {name}")
     servers = json.loads((plugin / ".mcp.json").read_text())["mcpServers"]
     if set(servers) != {"mysql", "aws-mcp", "github"}:
         raise ValueError("Expected MySQL, AWS, and GitHub connectors")

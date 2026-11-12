@@ -52,6 +52,14 @@ class PackagingTests(unittest.TestCase):
             package.build(self.root / "release.zip", self.plugin)
         self.assertFalse((self.root / "release.zip").exists())
 
+    def test_branding_reference_must_be_packaged(self):
+        path = self.plugin / ".codex-plugin/plugin.json"
+        data = json.loads(path.read_text())
+        data["interface"]["logo"] = "./assets/missing.svg"
+        path.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError, "Unpackaged presentation reference: logo"):
+            package.validate(self.plugin)
+
     def test_symlink_cannot_exfiltrate_an_external_file(self):
         secret = self.root / "secret"
         secret.write_text("secret")

@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.0** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.1** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -111,7 +111,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/package_plugin.py
 ```
 
-Output: `dist/data-toolkit-0.1.0.zip`. Its root contains `.codex-plugin/plugin.json`,
+Output: `dist/data-toolkit-0.1.1.zip`. Its root contains `.codex-plugin/plugin.json`,
 `.mcp.json`, scripts, and skills. The packager validates references, rejects
 symlinks and unlisted plugin files, and uses an explicit release-file allowlist.
 The `.agents/plugins/marketplace.json` catalog remains in the repository, outside
