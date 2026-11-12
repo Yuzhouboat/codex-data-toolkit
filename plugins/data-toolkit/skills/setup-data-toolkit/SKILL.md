@@ -8,9 +8,9 @@ available; it does not supply credentials or prove access.
 
 Read [references/setup.md](references/setup.md) for runtimes, environment variables,
 and disabling unused servers. Inspect available tools before proposing duplicate servers.
-The plugin's `scripts/check_prerequisites.py` can report executable and variable presence
-without network requests. Run it from the installed plugin root if local execution is
-available. Report the difference between this shell and the running Codex environment.
+When local execution is available, check for `node`, `npx`, and `uvx` as needed, and
+inspect only whether required environment variables are set. Report the difference
+between this shell and the running Codex environment.
 
 Keep credentials in the user's existing environment or credential manager. Report variable
 names and set/unset state; ask the user to enter secret values outside chat. Preserve

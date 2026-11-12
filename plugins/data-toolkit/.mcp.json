@@ -1,9 +1,13 @@
 {
   "mcpServers": {
     "mysql": {
-      "command": "python3",
+      "command": "npx",
       "args": [
-        "${PLUGIN_ROOT}/scripts/launch_mysql.py"
+        "-y",
+        "@toolbox-sdk/server@1.16.0",
+        "--prebuilt",
+        "mysql",
+        "--stdio"
       ],
       "env_vars": [
         "MYSQL_HOST",

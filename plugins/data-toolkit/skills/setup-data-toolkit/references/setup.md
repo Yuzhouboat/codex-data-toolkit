@@ -6,13 +6,13 @@ supported Codex compatibility manifest to retain `env_vars` and
 
 | Service | Runtime | Credentials and defaults |
 | --- | --- | --- |
-| MySQL | Python 3.8+, Node.js 18+ and npx | MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD required. MYSQL_HOST defaults to localhost; MYSQL_PORT defaults to 3306. |
+| MySQL | Node.js 18+ and npx | MYSQL_HOST, MYSQL_PORT, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD. Set MYSQL_HOST=localhost and MYSQL_PORT=3306 for a local server. |
 | AWS / Redshift | uv with uvx | Existing AWS credential chain: profile, SSO, or environment. AWS_PROFILE is optional. Endpoint is us-east-1. |
 | GitHub | Remote HTTP MCP; no extra local runtime | GITHUB_PERSONAL_ACCESS_TOKEN supplied to Codex through its launch environment. |
 
 MySQL runs `@toolbox-sdk/server@1.16.0`; AWS runs `mcp-proxy-for-aws@1.6.3`.
-First launch may download those packages. The launcher supplies MySQL host and port
-defaults without writing credential files. It reports missing variable names on stderr.
+First launch may download those packages. Codex starts each command directly;
+there are no bundled launcher scripts. Supply MySQL host and port explicitly.
 GitHub uses the hosted endpoint `https://api.githubcopilot.com/mcp/`.
 
 Set credentials in the terminal or supported application launch environment, then restart

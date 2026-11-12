@@ -27,8 +27,8 @@ not count as an MCP success. Continue checking the other integrations after a fa
 ## Credential handling and boundaries
 
 When diagnosing missing configuration, inspect only whether named variables are present
-and nonempty. The kit uses `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`,
-and `GITHUB_PERSONAL_ACCESS_TOKEN`. MySQL host and port have defaults.
+and nonempty. The kit uses `MYSQL_HOST`, `MYSQL_PORT`,
+`MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `GITHUB_PERSONAL_ACCESS_TOKEN`.
 AWS may authenticate through profiles, SSO, or the default credential chain. Missing
 environment variables alone do not prove authentication is broken. The running agent may also have a different environment
 from the terminal where credentials were set.

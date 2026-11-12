@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.1** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.2** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -46,11 +46,11 @@ using your client's controls. Do not edit the installed cache.
 
 | Integration | Requirements |
 | --- | --- |
-| MySQL | Python 3.8+, Node.js 18+ with npx; MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD |
+| MySQL | Node.js 18+ with npx; MYSQL_HOST, MYSQL_PORT, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD |
 | AWS / Redshift | uv with uvx; an existing AWS profile, SSO session, or credential environment |
 | GitHub | GITHUB_PERSONAL_ACCESS_TOKEN available to the Codex process |
 
-MySQL defaults to localhost:3306; set MYSQL_HOST and MYSQL_PORT to override.
+Set MYSQL_HOST and MYSQL_PORT explicitly; use localhost and 3306 for a local MySQL server.
 The AWS proxy targets **us-east-1**. AWS_REGION does not rewrite that proxy URL.
 MySQL's server package is pinned to **1.16.0** and the AWS proxy to **1.6.3**.
 They may download dependencies on first start. GitHub uses its hosted MCP service.
@@ -101,27 +101,28 @@ codex plugin marketplace remove yuzhou-data-toolkit
 Check `codex plugin remove --help` for your installed client's selector format.
 Uninstalling does not revoke service credentials.
 
-## Develop and package
+## Repository structure
 
-Build tooling requires Python **3.11+**, with no third-party Python packages:
-
-```bash
-python3 scripts/package_plugin.py --check
-python3 -m unittest discover -s tests -v
-python3 scripts/package_plugin.py
+```text
+.agents/plugins/marketplace.json      # Lists the plugin
+plugins/data-toolkit/
+  .codex-plugin/plugin.json           # Identity, presentation, and onboarding
+  .mcp.json                          # MySQL, AWS, and GitHub connections
+  assets/icon.svg                    # Plugin icon
+  skills/
+    setup-data-toolkit/SKILL.md       # Guided setup
+    setup-data-toolkit/references/setup.md
+    check-connectors/SKILL.md         # Read-only connection checks
 ```
 
-Output: `dist/data-toolkit-0.1.1.zip`. Its root contains `.codex-plugin/plugin.json`,
-`.mcp.json`, scripts, and skills. The packager validates references, rejects
-symlinks and unlisted plugin files, and uses an explicit release-file allowlist.
-The `.agents/plugins/marketplace.json` catalog remains in the repository, outside
-the plugin ZIP. CI runs validation, unit tests, and builds an artifact.
+Edit these files directly. This repository has no bundled scripts, automated tests,
+GitHub workflow, or ZIP build. MCP servers run through the commands in `.mcp.json`.
 
-With Codex CLI installed, run `python3 scripts/smoke_codex.py` to register the
-marketplace, install the plugin, inspect parsed MCP definitions, and uninstall in
-a disposable CODEX_HOME. It does not modify your active profile or contact services.
+To try changes locally, register the repository directory:
 
-The supported Codex compatibility format retains environment-based authentication
-from the original toolkit. No global config merger or credential installer is bundled.
-See [PUBLISHING.md](PUBLISHING.md) for public-directory eligibility and the remaining
-release requirements. Local package checks do not verify live service connectivity.
+```bash
+codex plugin marketplace add "$PWD"
+```
+
+Refresh the marketplace, update/reinstall the plugin, and start a new session.
+Use check-connectors to verify live service access after configuring credentials.
