@@ -1,0 +1,10 @@
+Data Toolkit is derived from the configuration and connector-check workflow in
+https://github.com/Yuzhouboat/ai-agent-data-toolkit
+
+The source working copy was inspected on 2026-11-11, with HEAD 8bf9e0b and local
+changes. This repository has independent history. No credentials, local agent
+configuration, or Git history from the source repository were copied.
+
+MySQL, AWS, GitHub, and MLflow integrations are provided by their respective
+upstream projects and services, under their own licenses and terms. This package
+does not bundle those third-party runtimes or claim affiliation with OpenAI.

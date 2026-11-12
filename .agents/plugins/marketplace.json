@@ -1,0 +1,20 @@
+{
+  "name": "yuzhou-data-toolkit",
+  "interface": {
+    "displayName": "Yuzhou Data Toolkit"
+  },
+  "plugins": [
+    {
+      "name": "data-toolkit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/data-toolkit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
