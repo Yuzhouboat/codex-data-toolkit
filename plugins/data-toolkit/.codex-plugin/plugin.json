@@ -1,6 +1,6 @@
 {
   "name": "data-toolkit",
-  "version": "0.1.9",
+  "version": "0.1.8",
   "description": "Connect Codex to MySQL, AWS/Redshift, and GitHub using your own credentials.",
   "author": {
     "name": "Yuzhouboat",
@@ -8,7 +8,6 @@
   },
   "repository": "https://github.com/Yuzhouboat/codex-data-toolkit",
   "mcpServers": "./.mcp.json",
-  "skills": "./skills/",
   "interface": {
     "displayName": "Data Toolkit",
     "shortDescription": "Explore databases, cloud resources, and code",

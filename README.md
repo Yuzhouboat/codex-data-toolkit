@@ -1,9 +1,9 @@
 # Codex Data Toolkit
 
-A Codex plugin containing MCP connections for **MySQL, AWS / Redshift / S3, and GitHub**.
-It uses existing server packages directly and includes a connection-check skill.
+A Codex plugin containing MCP connections for **MySQL, AWS / Redshift, and GitHub**.
+It uses existing server packages directly, with no bundled scripts or skills.
 
-Version **0.1.9** is distributed through this public GitHub marketplace. It is not
+Version **0.1.8** is distributed through this public GitHub marketplace. It is not
 listed in OpenAI's public Plugins Directory.
 
 ## Install
@@ -61,14 +61,6 @@ Ask for the work you need, for example:
 
 Available tools and service permissions determine which requests can run.
 
-Use `$check-connections` or ask "Check all my service connections" to run
-read-only checks for GitHub, Redshift, S3, and MySQL. The skill reports each
-service separately, including missing configuration or permission errors, and
-gives setup instructions with the relevant environment variable names and
-steps to make them available to Codex.
-Redshift API access and SQL execution are checked separately; SQL verification
-requires a known target database and authentication configuration.
-
 ## Update or remove
 
 Refresh the marketplace, then update the plugin using your client:
@@ -87,7 +79,6 @@ plugins/data-toolkit/
   .codex-plugin/plugin.json            # Identity and presentation
   .mcp.json                           # Direct MCP connections
   assets/icon.svg                     # Plugin icon
-  skills/check-connections/            # Read-only service connection checks
 README.md
 NOTICE
 ```
