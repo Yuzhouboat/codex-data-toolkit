@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.6** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.7** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -137,8 +137,11 @@ connection checks are read-only; this package is not a read-only enforcement lay
 
 Start with **"Use check-connectors to check my Data Toolkit connections."**
 
-Checks report PASS, FAIL, or UNTESTED with actual evidence. They distinguish AWS
-identity from Redshift SQL access and tool configuration from successful calls.
+Checks report current-session tool availability, fresh MCP discovery when needed, and
+successful authenticated operations separately using PASS, FAIL, or UNTESTED. Fresh tool
+discovery alone does not verify an authenticated read or repair an existing conversation.
+Current startup errors are distinguished from historical logs. AWS identity and Redshift
+resource discovery remain separate from Redshift SQL access.
 Then ask for the work you need, for example:
 
 - "List the tables in my MySQL database and describe their columns."

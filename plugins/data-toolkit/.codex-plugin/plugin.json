@@ -1,6 +1,6 @@
 {
   "name": "data-toolkit",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Connect Codex to MySQL, AWS/Redshift, and GitHub with guided setup and connection checks.",
   "author": {
     "name": "Yuzhouboat",
