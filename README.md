@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.4** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.5** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -55,23 +55,35 @@ The AWS proxy targets **us-east-1**. AWS_REGION does not rewrite that proxy URL.
 MySQL's server package is pinned to **1.16.0** and the AWS proxy to **1.6.3**.
 They may download dependencies on first start. GitHub uses its hosted MCP service.
 
-Ask **"Use setup-data-toolkit to help me configure my connections."** On macOS, the
-skill opens the wizard in a separate Terminal window, where you enter credentials.
-macOS may ask you to allow control of Terminal. The agent does not capture your input.
+Ask **"Use setup-data-toolkit to help me configure my connections."** The skill:
+
+1. Shows credential readiness and missing/invalid variable names for all three services.
+2. Asks which service to set up first, or whether to set up all services.
+3. Skips services whose credentials are already present.
+4. Asks whether you want to set environment variables yourself or use the wizard.
+5. For the wizard choice on macOS, opens a separate Terminal window for your selection.
+
+Credential presence is separate from verified connection access. No secret values are
+shown in the readiness report. For manual setup, follow the selected service's variable
+instructions outside chat; exports in another terminal may not reach the desktop app.
+For wizard setup, macOS may ask you to allow control of Terminal. The agent does not capture your input.
 You can also open the wizard from this repository:
 
 ```bash
-node plugins/data-toolkit/scripts/runtime.mjs setup
+node plugins/data-toolkit/scripts/runtime.mjs setup mysql
 ```
 
 If automatic opening is unavailable, run it yourself in your own terminal:
 
 ```bash
-bash plugins/data-toolkit/scripts/setup.sh
+bash plugins/data-toolkit/scripts/setup.sh mysql
 ```
 
 For an installed copy, the setup skill resolves the installed plugin path.
-Each service can be skipped. Passwords, tokens, and AWS access keys use
+Use mysql, aws, github, or all (the default) to select services. Multiple service names
+are also accepted. Complete services and existing fields are kept automatically. Add
+--reconfigure only to change existing credentials. Each service can also be skipped.
+Passwords, tokens, and AWS access keys use
 hidden input. AWS supports either an existing profile/SSO session or access keys with
 an optional session token. The wizard does not create accounts, tokens, or AWS profiles.
 

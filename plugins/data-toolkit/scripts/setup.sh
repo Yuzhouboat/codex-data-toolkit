@@ -188,6 +188,25 @@ finish() {
 set +x
 set +v
 umask 077
+SERVICES=()
+RECONFIGURE=no
+for option in "$@"; do
+  case "$option" in
+    mysql|aws|github|all) SERVICES+=("$option") ;;
+    --reconfigure) RECONFIGURE=yes ;;
+    *) printf 'Choose mysql, aws, github, or all; optionally add --reconfigure.\n' >&2; exit 1 ;;
+  esac
+done
+if [[ ${#SERVICES[@]} -eq 0 ]]; then SERVICES=(all); fi
+if [[ " ${SERVICES[*]} " == *" all "* ]]; then
+  if [[ ${#SERVICES[@]} -ne 1 ]]; then printf 'Use all alone.\n' >&2; exit 1; fi
+  SERVICES=(mysql aws github)
+fi
+selected() {
+  local service
+  for service in "${SERVICES[@]}"; do [[ "$service" == "$1" ]] && return 0; done
+  return 1
+}
 if [[ ! -t 0 || ! -t 1 ]]; then
   printf 'Run this wizard in your own interactive terminal; do not pipe credentials into it.\n' >&2
   exit 1
@@ -216,8 +235,32 @@ put() {
   esac
   write_env "$1" "$2" >/dev/null
 }
+keep_existing() {
+  [[ "$RECONFIGURE" == no ]] || return 1
+  local key="$1" current
+  current=$(_existing "$key" || true)
+  if [[ -z "$current" ]]; then current="${!key:-}"; fi
+  [[ -n "$current" ]] || return 1
+  if [[ "$key" == MYSQL_PORT ]]; then
+    [[ "$current" =~ ^[0-9]{1,5}$ ]] || return 1
+    (( 10#$current >= 1 && 10#$current <= 65535 )) || return 1
+  fi
+  if [[ "$key" == AWS_AUTH_MODE && "$current" != profile && "$current" != keys ]]; then return 1; fi
+  put "$key" "$current"
+  say "$key is already configured; keeping it."
+}
+should_configure() {
+  local state
+  state=$(node "$RUNTIME" configured "$1") || exit 1
+  if [[ "$state" == yes && "$RECONFIGURE" == no ]]; then
+    say "$1 credentials are already configured; skipping setup."
+    return 1
+  fi
+  confirm "Configure $1?"
+}
 required() {
   local key="$1" prompt="$2" hidden="${3:-no}"
+  if keep_existing "$key"; then return; fi
   while true; do
     if [[ "$hidden" == yes ]]; then ask_secret "$key" "$prompt"; else ask "$key" "$prompt"; fi
     if [[ -n "${!key}" ]]; then break; fi
@@ -231,19 +274,23 @@ commit_service() {
   say "$1 settings saved. Connectivity has not been tested."
 }
 
-TOTAL_STAGES=4
+TOTAL_STAGES=$((${#SERVICES[@]} + 1))
 banner "Data Toolkit connection setup"
 note "Secrets are entered with hidden input and saved as local plaintext."
 note "Storage: $STORE_FILE (only your user can read it)."
 note "Press Enter to retain an existing value; Ctrl-C cancels the current stage."
 pause
 
+if selected mysql; then
 stage "MySQL"
-if confirm "Configure MySQL?"; then
+if should_configure mysql; then
   say "Use the host and login supplied by your database administrator."
-  ask MYSQL_HOST "Host [localhost]:"
-  MYSQL_HOST="${MYSQL_HOST:-localhost}"
-  put MYSQL_HOST "$MYSQL_HOST"
+  if ! keep_existing MYSQL_HOST; then
+    ask MYSQL_HOST "Host [localhost]:"
+    MYSQL_HOST="${MYSQL_HOST:-localhost}"
+    put MYSQL_HOST "$MYSQL_HOST"
+  fi
+  if ! keep_existing MYSQL_PORT; then
   while true; do
     ask MYSQL_PORT "Port [3306]:"
     MYSQL_PORT="${MYSQL_PORT:-3306}"
@@ -251,23 +298,29 @@ if confirm "Configure MySQL?"; then
     warn "Enter a port between 1 and 65535."
   done
   put MYSQL_PORT "$MYSQL_PORT"
+  fi
   required MYSQL_DATABASE "Database:"
   required MYSQL_USER "Username:"
   required MYSQL_PASSWORD "Password (hidden):" yes
   commit_service mysql
 fi
 pause
+fi
 
+if selected aws; then
 stage "AWS / Redshift"
-if confirm "Configure AWS / Redshift?"; then
+if should_configure aws; then
   say "The AWS MCP endpoint remains us-east-1."
   say "Choose an existing profile/SSO session, or supply access keys."
+  if ! keep_existing AWS_AUTH_MODE; then
   while true; do
     ask AWS_AUTH_MODE "Authentication [profile/keys]:"
     if [[ "$AWS_AUTH_MODE" == profile || "$AWS_AUTH_MODE" == keys ]]; then break; fi
     warn "Enter profile or keys."
   done
   put AWS_AUTH_MODE "$AWS_AUTH_MODE"
+  fi
+  AWS_AUTH_MODE=$(_existing AWS_AUTH_MODE)
   if [[ "$AWS_AUTH_MODE" == profile ]]; then
     required AWS_PROFILE "Existing AWS profile name:"
     note "For SSO, run aws sso login --profile YOUR_PROFILE in your terminal when needed."
@@ -275,16 +328,20 @@ if confirm "Configure AWS / Redshift?"; then
     say "Use access keys supplied through your AWS account or administrator."
     required AWS_ACCESS_KEY_ID "Access-key ID (hidden):" yes
     required AWS_SECRET_ACCESS_KEY "Secret-access key (hidden):" yes
-    ask_secret AWS_SESSION_TOKEN "Session token (hidden, optional; enter - to clear):"
-    if [[ "$AWS_SESSION_TOKEN" == - ]]; then AWS_SESSION_TOKEN=""; fi
-    put AWS_SESSION_TOKEN "$AWS_SESSION_TOKEN"
+    if ! keep_existing AWS_SESSION_TOKEN; then
+      ask_secret AWS_SESSION_TOKEN "Session token (hidden, optional; enter - to clear):"
+      if [[ "$AWS_SESSION_TOKEN" == - ]]; then AWS_SESSION_TOKEN=""; fi
+      put AWS_SESSION_TOKEN "$AWS_SESSION_TOKEN"
+    fi
   fi
   commit_service aws
 fi
 pause
+fi
 
+if selected github; then
 stage "GitHub"
-if confirm "Configure GitHub?"; then
+if should_configure github; then
   say "Use a personal access token with access to the repositories you need."
   open_url "https://github.com/settings/personal-access-tokens"
   note "If you already have a token, use it; no new token is required."
@@ -292,15 +349,18 @@ if confirm "Configure GitHub?"; then
   commit_service github
 fi
 pause
+fi
 
 stage "Start the desktop app and verify"
 say "MySQL and AWS will read their saved settings when their MCP servers start."
+if selected github; then
 say "GitHub reads the app's environment, so fully quit the desktop app first."
 say "Then run this command in your terminal to open it with the saved GitHub token:"
 printf '\n  node %q app\n\n' "$RUNTIME"
 note "The app launcher is for macOS. If detection fails, append --app /path/to/Your.app."
 note "Use this launcher each time you reopen the app and need the saved GitHub token."
 note "Without a saved GitHub token, open the app normally for MySQL/AWS."
+fi
 say "In a new conversation, ask: Use check-connectors to check my Data Toolkit connections."
 note "Setup saves settings; only live connection probes establish access."
 # The library's summary lists names only. Empty arrays need nounset disabled on Bash 3.

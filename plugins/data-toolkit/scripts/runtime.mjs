@@ -126,6 +126,38 @@ export function environment(service, stored, inherited = process.env) {
   return env;
 }
 
+export function credentialStatus(stored, inherited = process.env) {
+  // Report names and presence only. Never return values from either credential source.
+  const summarize = required => {
+    const missing = required.filter(key => !(Object.hasOwn(stored, key) ? stored[key] : inherited[key]));
+    const saved = required.some(key => Object.hasOwn(stored, key));
+    const external = required.some(key => !Object.hasOwn(stored, key) && inherited[key]);
+    return { configured: missing.length === 0, source: saved ? (external ? 'mixed' : 'saved') : (external ? 'environment' : 'none'), missing };
+  };
+  const mysql = summarize(groups.mysql);
+  const port = Object.hasOwn(stored, 'MYSQL_PORT') ? stored.MYSQL_PORT : inherited.MYSQL_PORT;
+  if (port && (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535)) {
+    mysql.configured = false;
+    mysql.invalid = ['MYSQL_PORT'];
+  }
+  const awsEnv = environment('aws', stored, inherited);
+  let aws;
+  if (stored.AWS_AUTH_MODE === 'profile') {
+    aws = { configured: Boolean(stored.AWS_PROFILE), source: 'saved', missing: stored.AWS_PROFILE ? [] : ['AWS_PROFILE'] };
+  } else if (stored.AWS_AUTH_MODE === 'keys') {
+    aws = summarize(['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']);
+  } else if (awsEnv.AWS_ACCESS_KEY_ID || awsEnv.AWS_SECRET_ACCESS_KEY) {
+    aws = summarize(['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']);
+  } else if (awsEnv.AWS_PROFILE || awsEnv.AWS_DEFAULT_PROFILE) {
+    aws = { configured: true, source: 'environment', missing: [] };
+  } else {
+    aws = { configured: false, source: 'credential_chain', missing: [], note: 'AWS may already authenticate through its default credential chain. Verify existing tools before requesting setup.' };
+  }
+  const github = summarize(groups.github);
+  github.appLaunchRequired = Boolean(stored.GITHUB_PERSONAL_ACCESS_TOKEN && stored.GITHUB_PERSONAL_ACCESS_TOKEN !== inherited.GITHUB_PERSONAL_ACCESS_TOKEN);
+  return { mysql, aws, github };
+}
+
 export function serverCommand(service) {
   if (service === 'mysql') return ['npx', ['-y', '@toolbox-sdk/server@1.16.0', '--prebuilt', 'mysql', '--stdio']];
   if (service === 'aws') return ['uvx', ['mcp-proxy-for-aws@1.6.3', 'https://aws-mcp.us-east-1.api.aws/mcp']];
@@ -167,18 +199,42 @@ function launch(command, args, env, detached = false) {
   }
 }
 
-export function setupCommand(script = path.join(path.dirname(fileURLToPath(import.meta.url)), 'setup.sh')) {
+export function setupOptions(args = []) {
+  const services = [];
+  let reconfigure = false;
+  for (const argument of args) {
+    if (argument === '--reconfigure') { reconfigure = true; continue; }
+    if (argument !== 'all' && !Object.hasOwn(groups, argument)) fail('Choose mysql, aws, github, or all.');
+    if (!services.includes(argument)) services.push(argument);
+  }
+  if (services.includes('all') && services.length > 1) fail('Use all alone, or list individual services.');
+  return { services: services.length ? services : ['all'], reconfigure };
+}
+
+export function setupCommand(script = path.join(path.dirname(fileURLToPath(import.meta.url)), 'setup.sh'), options = []) {
   // Quote for Terminal's shell, while passing the command to AppleScript as data.
-  const quoted = "'" + script.replaceAll("'", "'\\''") + "'";
+  const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
+  const selection = setupOptions(options);
+  const argumentsToPass = [...selection.services, ...(selection.reconfigure ? ['--reconfigure'] : [])];
   const appleScript = 'on run argv\n  tell application "Terminal"\n    activate\n    do script (item 1 of argv)\n  end tell\nend run';
-  return ['/usr/bin/osascript', ['-e', appleScript, `bash ${quoted}`]];
+  return ['/usr/bin/osascript', ['-e', appleScript, `bash ${[script, ...argumentsToPass].map(quote).join(' ')}`]];
 }
 
 export function main(args = process.argv.slice(2), directory = defaultDirectory) {
   const [command, ...rest] = args;
-  if (command === 'setup' && !rest.length) {
+  if (command === 'status' && (rest.length === 0 || (rest.length === 1 && groups[rest[0]]))) {
+    const status = credentialStatus(load(directory));
+    console.log(JSON.stringify(rest.length ? { [rest[0]]: status[rest[0]] } : status, null, 2));
+    return;
+  }
+  if (command === 'configured' && rest.length === 1 && Object.hasOwn(groups, rest[0])) {
+    console.log(credentialStatus(load(directory))[rest[0]].configured ? 'yes' : 'no');
+    return;
+  }
+  if (command === 'setup') {
+    setupOptions(rest);
     if (process.platform !== 'darwin') fail('Automatic setup launch supports macOS. Run bash scripts/setup.sh in your own terminal instead.');
-    const [executable, parameters] = setupCommand();
+    const [executable, parameters] = setupCommand(undefined, rest);
     try {
       execFileSync(executable, parameters, { stdio: 'ignore', timeout: 30000 });
     } catch {
@@ -202,7 +258,7 @@ export function main(args = process.argv.slice(2), directory = defaultDirectory)
     launch(appExecutable(rest[1]), [], environment('app', load(directory)), true);
     return;
   }
-  fail('Usage: node runtime.mjs setup|mysql|aws|app [--app /path/to/Your.app]');
+  fail('Usage: node runtime.mjs status [mysql|aws|github] | setup [mysql|aws|github|all] [--reconfigure] | mysql | aws | app [--app /path/to/Your.app]');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

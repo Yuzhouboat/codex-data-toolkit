@@ -16,12 +16,30 @@ or AWS settings and starts the pinned command. MySQL host and port are supplied 
 the wizard, or must be set explicitly for environment-only setups.
 GitHub uses the hosted endpoint `https://api.githubcopilot.com/mcp/`.
 
+## Check existing setup first
+
+Run `node scripts/runtime.mjs status` from the installed plugin root before launching
+setup. An optional `mysql`, `aws`, or `github` argument scopes the report. Output includes
+only configured state, credential source, missing/invalid variable names, and whether
+GitHub needs the app launcher. It never returns credential values or tests remote access.
+
+Show a readiness table for all services, listing only credential state and missing/invalid
+variable names. Ask which service to set up first (or all), then ask whether the user
+prefers manual environment-variable setup or the wizard. Reuse choices already stated
+by the user and wait for each missing choice before proceeding.
+
+Skip setup for already-configured requested services. A saved GitHub token that is absent
+from the current process needs the app launcher, not another token-entry step. AWS's
+default credential chain may already work even when status finds no explicit credentials;
+verify existing AWS tools before recommending setup. Change existing credentials only
+when the user asks. A malformed or inaccessible store is an error, not an empty setup.
+
 ## Interactive setup
 
 On macOS, the setup skill can run this opener from the installed plugin root:
 
 ```bash
-node scripts/runtime.mjs setup
+node scripts/runtime.mjs setup mysql
 ```
 
 It opens a separate visible Terminal window; credentials are entered only in that window.
@@ -30,10 +48,13 @@ macOS may require permission to control Terminal. If opening fails or on another
 give the user this fallback to run in their own terminal:
 
 ```bash
-bash scripts/setup.sh
+bash scripts/setup.sh mysql
 ```
 
-The wizard offers MySQL, AWS, and GitHub stages; each can be skipped. It hides passwords,
+Pass mysql, aws, github, all (the default), or multiple individual names to select stages.
+The wizard skips services whose credentials are complete and keeps existing fields.
+Append --reconfigure only when changing/resetting existing credentials is intended.
+Each selected stage can also be skipped. It hides passwords,
 access keys, session tokens, and GitHub tokens. Re-running keeps skipped settings.
 Press Enter to retain an existing value. For the optional AWS session token, `-` clears it.
 Completed stages are saved atomically; cancelling a stage preserves its previous settings.
