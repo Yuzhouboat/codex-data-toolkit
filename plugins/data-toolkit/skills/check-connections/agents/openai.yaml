@@ -1,0 +1,4 @@
+interface:
+  display_name: "Check Connections"
+  short_description: "Check GitHub, Redshift, S3, and MySQL access"
+  default_prompt: "Use $check-connections to check GitHub, Redshift, S3, and MySQL connections."
