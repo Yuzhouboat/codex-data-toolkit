@@ -1,23 +1,17 @@
 {
   "name": "data-toolkit",
-  "version": "0.1.7",
-  "description": "Connect Codex to MySQL, AWS/Redshift, and GitHub with guided setup and connection checks.",
+  "version": "0.1.8",
+  "description": "Connect Codex to MySQL, AWS/Redshift, and GitHub using your own credentials.",
   "author": {
     "name": "Yuzhouboat",
     "url": "https://github.com/Yuzhouboat"
   },
   "repository": "https://github.com/Yuzhouboat/codex-data-toolkit",
-  "skills": "./skills/",
   "mcpServers": "./.mcp.json",
-  "extensions": {
-    "com.openai": {
-      "onboardingSkill": "./skills/setup-data-toolkit/SKILL.md"
-    }
-  },
   "interface": {
     "displayName": "Data Toolkit",
     "shortDescription": "Explore databases, cloud resources, and code",
-    "longDescription": "Bring MySQL, AWS, Redshift, and GitHub into your conversation. Explore database schemas, inspect cloud resources, and review repository activity. Start with guided setup, then check each connection with a small read-only probe. Connect the services you need using your own credentials and permissions.",
+    "longDescription": "Connect to MySQL, AWS, Redshift, and GitHub using your own credentials and permissions. Explore database schemas, inspect cloud resources, and review repository activity.",
     "developerName": "Yuzhouboat",
     "category": "Developer Tools",
     "websiteURL": "https://github.com/Yuzhouboat/codex-data-toolkit",
@@ -29,9 +23,9 @@
     "logo": "./assets/icon.svg",
     "logoDark": "./assets/icon.svg",
     "defaultPrompt": [
-      "Help me connect the services I use.",
-      "Check my connections and show what is ready.",
-      "Show me what I can explore with my connected services."
+      "List the tables in my MySQL database.",
+      "List Redshift serverless workgroups in us-east-1.",
+      "Summarize open issues in my GitHub repository."
     ]
   }
 }
