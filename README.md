@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.3** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.4** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -161,7 +161,9 @@ plugins/data-toolkit/
 ```
 
 Edit these files directly. This repository has no automated test folder, GitHub
-workflow, or ZIP build. The two scripts support interactive setup and runtime startup.
+workflow, or ZIP build. The two scripts support interactive setup and runtime startup. Local MCP entries use
+`cwd: "."` and relative script arguments so Codex resolves them from the installed
+plugin directory without relying on placeholder expansion.
 
 To try changes locally, register the repository directory:
 

@@ -3,7 +3,7 @@
     "mysql": {
       "command": "node",
       "args": [
-        "${PLUGIN_ROOT}/scripts/runtime.mjs",
+        "./scripts/runtime.mjs",
         "mysql"
       ],
       "env_vars": [
@@ -13,12 +13,13 @@
         "MYSQL_USER",
         "MYSQL_PASSWORD"
       ],
-      "startup_timeout_sec": 120
+      "startup_timeout_sec": 120,
+      "cwd": "."
     },
     "aws-mcp": {
       "command": "node",
       "args": [
-        "${PLUGIN_ROOT}/scripts/runtime.mjs",
+        "./scripts/runtime.mjs",
         "aws"
       ],
       "env_vars": [
@@ -31,7 +32,8 @@
         "AWS_CONFIG_FILE",
         "AWS_SHARED_CREDENTIALS_FILE"
       ],
-      "startup_timeout_sec": 120
+      "startup_timeout_sec": 120,
+      "cwd": "."
     },
     "github": {
       "type": "http",
