@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.5** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.6** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -60,7 +60,8 @@ Ask **"Use setup-data-toolkit to help me configure my connections."** The skill:
 1. Shows credential readiness and missing/invalid variable names for all three services.
 2. Asks which service to set up first, or whether to set up all services.
 3. Skips services whose credentials are already present.
-4. Asks whether you want to set environment variables yourself or use the wizard.
+4. On compatible macOS systems, asks whether you prefer manual environment setup or
+   the wizard. On Windows or incompatible systems, guides manual setup in your native shell.
 5. For the wizard choice on macOS, opens a separate Terminal window for your selection.
 
 Credential presence is separate from verified connection access. No secret values are
@@ -73,13 +74,20 @@ You can also open the wizard from this repository:
 node plugins/data-toolkit/scripts/runtime.mjs setup mysql
 ```
 
-If automatic opening is unavailable, run it yourself in your own terminal:
+If automatic opening fails, use manual environment-variable setup. On a compatible
+macOS system, you may also run the wizard yourself in your own terminal:
 
 ```bash
 bash plugins/data-toolkit/scripts/setup.sh mysql
 ```
 
-For an installed copy, the setup skill resolves the installed plugin path.
+For an installed copy, the setup skill resolves the installed plugin path. It checks
+compatibility before offering the wizard; missing Bash, AppleScript, Terminal, or Node
+results in manual setup guidance. It does not require Windows users to install WSL/Bash.
+Use PowerShell environment instructions on Windows and restart the desktop app after
+changing its launch environment. Runtime prerequisites still need to be installed.
+`node plugins/data-toolkit/scripts/runtime.mjs status --environment-only` checks variable
+presence without loading the Unix credential store.
 Use mysql, aws, github, or all (the default) to select services. Multiple service names
 are also accepted. Complete services and existing fields are kept automatically. Add
 --reconfigure only to change existing credentials. Each service can also be skipped.
@@ -98,7 +106,9 @@ settings take precedence; environment-only configurations continue working when 
 service has no saved settings. The wizard defaults MySQL host/port to localhost/3306.
 
 GitHub keeps its direct HTTP connection, so its token must reach the desktop app's
-environment. Fully quit the macOS desktop app, then launch it from your terminal:
+environment. If the PAT is already available there, no special launcher is required.
+If it is saved only in the wizard file, configure the app's environment manually or use
+this optional macOS helper after fully quitting the app:
 
 ```bash
 node plugins/data-toolkit/scripts/runtime.mjs app

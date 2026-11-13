@@ -354,11 +354,13 @@ fi
 stage "Start the desktop app and verify"
 say "MySQL and AWS will read their saved settings when their MCP servers start."
 if selected github; then
-say "GitHub reads the app's environment, so fully quit the desktop app first."
-say "Then run this command in your terminal to open it with the saved GitHub token:"
+say "GitHub only needs GITHUB_PERSONAL_ACCESS_TOKEN in the desktop app's environment."
+say "If it is already available there, no special launcher or relaunch is needed."
+say "If the token is only saved in this wizard's file, configure the app environment"
+say "yourself, or fully quit the app and use this optional macOS helper:"
 printf '\n  node %q app\n\n' "$RUNTIME"
 note "The app launcher is for macOS. If detection fails, append --app /path/to/Your.app."
-note "Use this launcher each time you reopen the app and need the saved GitHub token."
+note "The helper is only needed when you rely on it to load the saved GitHub token."
 note "Without a saved GitHub token, open the app normally for MySQL/AWS."
 fi
 say "In a new conversation, ask: Use check-connectors to check my Data Toolkit connections."

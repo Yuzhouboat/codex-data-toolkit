@@ -24,6 +24,17 @@ and the permissions exercised by the probe. If the tool is unavailable, report t
 next setup step; a direct CLI/API fallback may supply extra diagnostic evidence but must
 not count as an MCP success. Continue checking the other integrations after a failure.
 
+GitHub's direct MCP connection requires GITHUB_PERSONAL_ACCESS_TOKEN in the Codex
+process environment; a special app launcher is not inherently required. Unavailable
+tools alone do not establish that the token is missing. Check available startup errors
+or presence-only environment diagnostics first, and distinguish the diagnostic shell's
+environment from the running app. If the cause is unknown, report UNTESTED with
+"Check GitHub MCP startup/configuration" as the next step. Recommend supplying the
+token to the app only when missing-environment evidence supports it. For a token saved
+only in the wizard file, the macOS app launcher is one optional way to supply it;
+manual launch-environment configuration is equally valid. Do not append a machine-specific
+app-launch command to every report or require relaunch when GitHub tools already work.
+
 ## Credential handling and boundaries
 
 When diagnosing missing configuration, inspect only whether named variables are present

@@ -16,12 +16,27 @@ or AWS settings and starts the pinned command. MySQL host and port are supplied 
 the wizard, or must be set explicitly for environment-only setups.
 GitHub uses the hosted endpoint `https://api.githubcopilot.com/mcp/`.
 
+## Platform compatibility
+
+Run `node scripts/runtime.mjs compatibility` when Node is available. The automatic
+wizard requires macOS, Bash, AppleScript, and Terminal.app. On Windows or other unsupported
+systems, or if these tools/local execution are unavailable, guide the user through manual
+setup in their native shell instead. Do not offer the wizard or require Bash/WSL solely
+for setup. An automation permission failure also falls back to manual setup.
+
+On Windows, use `node scripts/runtime.mjs status --environment-only` for presence checks;
+it skips the Unix private credential store. If Node is missing, report that prerequisite
+and use native presence-only checks without printing values. Use PowerShell examples on
+Windows and export syntax on Bash/Zsh. Environment variables set only in a terminal do
+not automatically reach an already-running desktop app. Explain persistence and restart
+requirements for the user's platform. Credential entry does not install MCP runtimes.
+
 ## Check existing setup first
 
 Run `node scripts/runtime.mjs status` from the installed plugin root before launching
 setup. An optional `mysql`, `aws`, or `github` argument scopes the report. Output includes
 only configured state, credential source, missing/invalid variable names, and whether
-GitHub needs the app launcher. It never returns credential values or tests remote access.
+the GitHub token is saved or present in the current process environment. It never returns credential values or tests remote access.
 
 Show a readiness table for all services, listing only credential state and missing/invalid
 variable names. Ask which service to set up first (or all), then ask whether the user
@@ -29,7 +44,9 @@ prefers manual environment-variable setup or the wizard. Reuse choices already s
 by the user and wait for each missing choice before proceeding.
 
 Skip setup for already-configured requested services. A saved GitHub token that is absent
-from the current process needs the app launcher, not another token-entry step. AWS's
+from the current process does not need to be entered again; ensure it reaches the app
+through manual environment setup or the optional macOS launcher. Missing tools alone
+do not prove the token is missing from the app. AWS's
 default credential chain may already work even when status finds no explicit credentials;
 verify existing AWS tools before recommending setup. Change existing credentials only
 when the user asks. A malformed or inaccessible store is an error, not an empty setup.
@@ -44,8 +61,9 @@ node scripts/runtime.mjs setup mysql
 
 It opens a separate visible Terminal window; credentials are entered only in that window.
 The agent may launch the opener, but must not capture the wizard's interactive input.
-macOS may require permission to control Terminal. If opening fails or on another platform,
-give the user this fallback to run in their own terminal:
+macOS may require permission to control Terminal. If opening fails or the platform is
+unsupported, use manual environment-variable setup. Compatible macOS users can also
+run the script themselves in their own terminal:
 
 ```bash
 bash scripts/setup.sh mysql
@@ -68,8 +86,9 @@ For AWS, selecting a profile clears inherited access keys; selecting keys clears
 inherited profile settings. Profile/SSO sign-in remains managed by AWS tooling.
 
 MySQL and AWS load their saved settings on MCP startup. GitHub remains a direct HTTP
-connection and requires the token in the desktop app's environment. Fully quit the
-macOS desktop app, then run:
+connection and requires the token in the desktop app's environment. If the PAT is already
+available there, no special launcher is required. If it is saved only in the wizard file,
+configure the app environment manually or fully quit the macOS app and use this helper:
 
 ```bash
 node scripts/runtime.mjs app

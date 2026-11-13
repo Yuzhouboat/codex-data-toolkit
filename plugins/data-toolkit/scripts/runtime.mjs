@@ -154,7 +154,8 @@ export function credentialStatus(stored, inherited = process.env) {
     aws = { configured: false, source: 'credential_chain', missing: [], note: 'AWS may already authenticate through its default credential chain. Verify existing tools before requesting setup.' };
   }
   const github = summarize(groups.github);
-  github.appLaunchRequired = Boolean(stored.GITHUB_PERSONAL_ACCESS_TOKEN && stored.GITHUB_PERSONAL_ACCESS_TOKEN !== inherited.GITHUB_PERSONAL_ACCESS_TOKEN);
+  github.environmentTokenPresent = Boolean(inherited.GITHUB_PERSONAL_ACCESS_TOKEN);
+  github.savedTokenPresent = Boolean(stored.GITHUB_PERSONAL_ACCESS_TOKEN);
   return { mysql, aws, github };
 }
 
@@ -211,6 +212,17 @@ export function setupOptions(args = []) {
   return { services: services.length ? services : ['all'], reconfigure };
 }
 
+export function setupCompatibility(platform = process.platform, available = fs.existsSync) {
+  const reasons = [];
+  if (platform !== 'darwin') reasons.push('The automatic wizard launcher supports macOS only.');
+  else {
+    if (!available('/bin/bash')) reasons.push('Bash is unavailable.');
+    if (!available('/usr/bin/osascript')) reasons.push('AppleScript is unavailable.');
+    if (!available('/System/Applications/Utilities/Terminal.app') && !available('/Applications/Utilities/Terminal.app')) reasons.push('Terminal.app is unavailable.');
+  }
+  return { platform, wizardSupported: reasons.length === 0, reasons, fallback: 'manual_environment_variables' };
+}
+
 export function setupCommand(script = path.join(path.dirname(fileURLToPath(import.meta.url)), 'setup.sh'), options = []) {
   // Quote for Terminal's shell, while passing the command to AppleScript as data.
   const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -222,9 +234,14 @@ export function setupCommand(script = path.join(path.dirname(fileURLToPath(impor
 
 export function main(args = process.argv.slice(2), directory = defaultDirectory) {
   const [command, ...rest] = args;
-  if (command === 'status' && (rest.length === 0 || (rest.length === 1 && groups[rest[0]]))) {
-    const status = credentialStatus(load(directory));
-    console.log(JSON.stringify(rest.length ? { [rest[0]]: status[rest[0]] } : status, null, 2));
+  if (command === 'compatibility' && !rest.length) {
+    console.log(JSON.stringify(setupCompatibility(), null, 2));
+    return;
+  }
+  const statusServices = rest.filter(argument => argument !== '--environment-only');
+  if (command === 'status' && (statusServices.length === 0 || (statusServices.length === 1 && Object.hasOwn(groups, statusServices[0])))) {
+    const status = credentialStatus(rest.includes('--environment-only') ? {} : load(directory));
+    console.log(JSON.stringify(statusServices.length ? { [statusServices[0]]: status[statusServices[0]] } : status, null, 2));
     return;
   }
   if (command === 'configured' && rest.length === 1 && Object.hasOwn(groups, rest[0])) {
@@ -233,12 +250,13 @@ export function main(args = process.argv.slice(2), directory = defaultDirectory)
   }
   if (command === 'setup') {
     setupOptions(rest);
-    if (process.platform !== 'darwin') fail('Automatic setup launch supports macOS. Run bash scripts/setup.sh in your own terminal instead.');
+    const compatibility = setupCompatibility();
+    if (!compatibility.wizardSupported) fail(`${compatibility.reasons.join(' ')} Set the selected service's environment variables manually in the app's launch environment instead.`);
     const [executable, parameters] = setupCommand(undefined, rest);
     try {
       execFileSync(executable, parameters, { stdio: 'ignore', timeout: 30000 });
     } catch {
-      fail('Unable to open Terminal. Run bash scripts/setup.sh from the plugin root in your own terminal. macOS may require permission to control Terminal.');
+      fail('Unable to open Terminal. Use manual environment-variable setup instead. macOS may require permission to control Terminal.');
     }
     console.log('Opened setup in Terminal. Enter credentials there, then return here to check connections.');
     return;
@@ -258,7 +276,7 @@ export function main(args = process.argv.slice(2), directory = defaultDirectory)
     launch(appExecutable(rest[1]), [], environment('app', load(directory)), true);
     return;
   }
-  fail('Usage: node runtime.mjs status [mysql|aws|github] | setup [mysql|aws|github|all] [--reconfigure] | mysql | aws | app [--app /path/to/Your.app]');
+  fail('Usage: node runtime.mjs compatibility | status [mysql|aws|github] [--environment-only] | setup [mysql|aws|github|all] [--reconfigure] | mysql | aws | app [--app /path/to/Your.app]');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
