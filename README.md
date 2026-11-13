@@ -5,7 +5,7 @@ read-only connection checks. Derived from
 [ai-agent-data-toolkit](https://github.com/Yuzhouboat/ai-agent-data-toolkit), with
 independent source control and plugin installation instead of a shell installer.
 
-Version **0.1.2** is a GitHub-marketplace package for local Codex sessions. It has
+Version **0.1.3** is a GitHub-marketplace package for local Codex sessions. It has
 not been approved or published in OpenAI's public Plugins Directory.
 
 ## Install
@@ -47,18 +47,60 @@ using your client's controls. Do not edit the installed cache.
 | Integration | Requirements |
 | --- | --- |
 | MySQL | Node.js 18+ with npx; MYSQL_HOST, MYSQL_PORT, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD |
-| AWS / Redshift | uv with uvx; an existing AWS profile, SSO session, or credential environment |
-| GitHub | GITHUB_PERSONAL_ACCESS_TOKEN available to the Codex process |
+| AWS / Redshift | Node.js 18+, uv with uvx; an existing AWS profile, SSO session, or access keys |
+| GitHub | GITHUB_PERSONAL_ACCESS_TOKEN available to Codex; Node.js 18+ for the saved-token app launcher |
 
 Set MYSQL_HOST and MYSQL_PORT explicitly; use localhost and 3306 for a local MySQL server.
 The AWS proxy targets **us-east-1**. AWS_REGION does not rewrite that proxy URL.
 MySQL's server package is pinned to **1.16.0** and the AWS proxy to **1.6.3**.
 They may download dependencies on first start. GitHub uses its hosted MCP service.
 
-Export credentials outside chat in the environment used to launch Codex, or use
-your supported application launch environment. Restart Codex after changing them.
-This plugin does not load .env files, request secrets in chat, or provide credentials.
-Desktop sessions may not inherit exports made in an unrelated terminal.
+Ask **"Use setup-data-toolkit to help me configure my connections."** On macOS, the
+skill opens the wizard in a separate Terminal window, where you enter credentials.
+macOS may ask you to allow control of Terminal. The agent does not capture your input.
+You can also open the wizard from this repository:
+
+```bash
+node plugins/data-toolkit/scripts/runtime.mjs setup
+```
+
+If automatic opening is unavailable, run it yourself in your own terminal:
+
+```bash
+bash plugins/data-toolkit/scripts/setup.sh
+```
+
+For an installed copy, the setup skill resolves the installed plugin path.
+Each service can be skipped. Passwords, tokens, and AWS access keys use
+hidden input. AWS supports either an existing profile/SSO session or access keys with
+an optional session token. The wizard does not create accounts, tokens, or AWS profiles.
+
+Settings are stored as **plaintext** in `~/.config/codex-data-toolkit/credentials.env`,
+with directory permission 700 and file permission 600. The helper parses this file as
+literal data, never as shell commands. Do not source it or paste its contents into chat.
+Project `.env` files are not loaded. Re-running preserves skipped services and offers
+to keep existing values; completed service stages are saved atomically.
+
+MySQL and AWS load saved settings automatically when their MCP servers start. Saved
+settings take precedence; environment-only configurations continue working when a
+service has no saved settings. The wizard defaults MySQL host/port to localhost/3306.
+
+GitHub keeps its direct HTTP connection, so its token must reach the desktop app's
+environment. Fully quit the macOS desktop app, then launch it from your terminal:
+
+```bash
+node plugins/data-toolkit/scripts/runtime.mjs app
+```
+
+The helper detects the app by bundle ID `com.openai.codex`, refuses to launch it if
+already running, and never force-quits it. If detection fails, append
+`--app /Applications/ChatGPT.app` or your actual app path. Use this helper each time
+you reopen the app and need the saved GitHub token; opening from the Dock does not
+load it. From an installed copy, use its runtime script path instead.
+
+Without a saved GitHub token, open the app normally for MySQL/AWS. Existing credentials
+supplied through the app's launch environment remain supported. Saving credentials
+does not test live access; use Check Connectors afterward.
 
 Ask **"Use setup-data-toolkit to help me configure my connections."** to select
 services and disable unused connectors. The setup skill includes configuration
@@ -99,7 +141,8 @@ codex plugin marketplace remove yuzhou-data-toolkit
 ```
 
 Check `codex plugin remove --help` for your installed client's selector format.
-Uninstalling does not revoke service credentials.
+Uninstalling does not revoke service credentials or remove the private credential file.
+Delete `~/.config/codex-data-toolkit/credentials.env` yourself to remove saved settings.
 
 ## Repository structure
 
@@ -109,14 +152,16 @@ plugins/data-toolkit/
   .codex-plugin/plugin.json           # Identity, presentation, and onboarding
   .mcp.json                          # MySQL, AWS, and GitHub connections
   assets/icon.svg                    # Plugin icon
+  scripts/setup.sh                    # Interactive terminal wizard
+  scripts/runtime.mjs                 # Credential loading and app/server launch
   skills/
     setup-data-toolkit/SKILL.md       # Guided setup
     setup-data-toolkit/references/setup.md
     check-connectors/SKILL.md         # Read-only connection checks
 ```
 
-Edit these files directly. This repository has no bundled scripts, automated tests,
-GitHub workflow, or ZIP build. MCP servers run through the commands in `.mcp.json`.
+Edit these files directly. This repository has no automated test folder, GitHub
+workflow, or ZIP build. The two scripts support interactive setup and runtime startup.
 
 To try changes locally, register the repository directory:
 

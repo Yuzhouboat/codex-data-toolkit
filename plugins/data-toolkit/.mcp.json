@@ -1,13 +1,10 @@
 {
   "mcpServers": {
     "mysql": {
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@toolbox-sdk/server@1.16.0",
-        "--prebuilt",
-        "mysql",
-        "--stdio"
+        "${PLUGIN_ROOT}/scripts/runtime.mjs",
+        "mysql"
       ],
       "env_vars": [
         "MYSQL_HOST",
@@ -19,10 +16,10 @@
       "startup_timeout_sec": 120
     },
     "aws-mcp": {
-      "command": "uvx",
+      "command": "node",
       "args": [
-        "mcp-proxy-for-aws@1.6.3",
-        "https://aws-mcp.us-east-1.api.aws/mcp"
+        "${PLUGIN_ROOT}/scripts/runtime.mjs",
+        "aws"
       ],
       "env_vars": [
         "AWS_PROFILE",
